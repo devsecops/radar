@@ -1,0 +1,6 @@
+{'1': {'data': 'cloudformation', 'action': 'request', 'key': 'Resources', 'status': '', 'result': ''}}
+{'2': {'data': '[1:result]', 'action': 'dictionary', 'key': 'Type', 'value': 'AWS::EC2::SecurityGroup',  'status': '', 'result': ''}}
+{'3': {'data': '[2:result]', 'action': 'dictionary', 'key': 'SecurityGroupIngress',  'status': '', 'result': ''}}
+{'4': {'data': '[3:result]', 'action': 'dictionary', 'key': 'IpProtocol', 'value': 'tcp',  'status': '', 'result': ''}}
+{'5': {'data': '[4:result]', 'action': 'dictionary', 'key': 'FromPort', 'value': '[<=22]', 'status': '', 'result': ''}}
+{'6': {'data': '[5:result]', 'action': 'dictionary', 'key': 'ToPort', 'value': '[>=22]', 'status': '', 'result': ''}}

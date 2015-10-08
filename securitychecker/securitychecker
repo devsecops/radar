@@ -1,0 +1,166 @@
+#!/usr/bin/python
+# coding: utf-8
+
+# securitychecker 
+# Description: Validate security of CloudFormation templates
+
+####################################################################################
+# Any code, applications, scripts, templates, proofs of concept, documentation     #
+# and other items provided by AWS under this SOW are “AWS Content,” as defined     #
+# in the Agreement, and are provided for illustration purposes only. All such      #
+# AWS Content is provided solely at the option of AWS, and is subject to the terms #
+# of the Addendum and the Agreement. Customer is solely responsible for using,     #
+# deploying, testing, and supporting any code and applications provided by AWS 	   #
+# under this SOW.								   #
+####################################################################################
+
+import json
+import yaml
+import sys
+import os
+from optparse import OptionParser
+import ast, boto, json, re
+from itertools import count
+from securitychecker.ComplianceTest import CFTest
+import securitychecker
+
+def main():
+
+	tests = []
+
+        parameters = {}
+
+        parser = OptionParser(usage="Usage: securitychecker --template <CF-Template> --config <Test Config> [ --unit-test ] --output <outputfile>",version="0.2")
+        parser.add_option("-t","--template",action="store",default="main.json", dest="template",help="CloudFormation template file")
+        parser.add_option("-u","--unit-test",action="store",dest="test", help="single unit test to check")
+        parser.add_option("-c","--config",action="store", dest="config",help="specify a test config of multiple tests")
+	parser.add_option("-o","--output",action="store", dest="outfile", help="name of output file")
+	parser.add_option("-l","--list-config",action="store",dest="configtype",help="list configurations available")
+	parser.add_option("-b","--bool", action="store_true",help="display simple success/failure output"),
+	parser.add_option("-p","--update",action="store",dest="updatefile",help="update unit test configuration"),
+        parser.add_option("-r","--region", action="store", default = "us-east-1", dest="region", help="region to test (default: us-east-1)")
+
+        (options, args) = parser.parse_args()
+
+        if len(sys.argv) <= 1:
+                parser.print_help()
+                sys.exit(0)
+
+
+
+	# option to display current config for installed securitycheck
+	if is_opt_provided(parser, 'configtype'):
+		if (options.configtype) == "compliance":
+			print_compliance()
+		elif (options.configtype) == "unittests":
+			print_unittests()
+		else:
+			print "Usage: securitycheck --list-config [ compliance | unittests ]"
+		sys.exit(0)
+        # attempt to update if option provided
+        if is_opt_provided(parser, 'updatefile'):
+                update(options.updatefile)
+                sys.exit(0)
+	elif not is_opt_provided(parser, 'template'):   # otherwise make sure tempate is provided
+                parser.print_help()
+                sys.exit(1)
+	else:
+		pass	
+	
+	# read json data from cloudformation template
+	with open(options.template) as file:
+		templatedata = json.load(file)
+	file.close()
+
+	# if config file is provided, read yaml test config
+	if is_opt_provided(parser, 'config'):
+		try:
+        		__import__('imp').find_module('securitychecker')
+        		modpath = securitychecker.__file__
+        		testdir = os.path.dirname(modpath) + "/data/compliance"
+		except:
+        		testdir = "."
+
+		configfile = testdir + "/" + options.config
+		with open(configfile) as file:
+			testconfig = yaml.load(file)
+		file.close()
+		
+		for test in testconfig['UnitTests']:
+			tests.append(test)
+	elif is_opt_provided(parser, 'test'):
+		tests.append(options.test)	
+	else:
+		parser.print_help()
+		sys.exit(1)
+
+	# Create a new iteration of tests to run using CFTest
+	testrun = CFTest(templatedata, tests)
+	# Run tests and return result
+	results = testrun.runTests()
+	final_results = results[0]
+
+	# output results, need to update this
+	if is_opt_provided(parser, 'bool'):
+		if len(final_results) <= 2:
+			print "1 VALIDATION SUCCESS"
+			sys.exit(0)
+		else:
+			print "2 VALIDATION FAILED"
+			sys.exit(2)
+
+	else:
+		print final_results
+
+def print_unittests():
+	modpath = securitychecker.__file__
+	dirpath = os.path.dirname(modpath) + "/data/UnitTests"
+	
+	print "Unit tests currently available with this install: \n"
+	for file in os.listdir(dirpath):
+		print "    " + file	
+	return
+
+def print_compliance():
+        modpath = securitychecker.__file__
+        dirpath = os.path.dirname(modpath) + "/data/compliance"
+
+        print "Compliance configs currently available with this install: \n"
+        for file in os.listdir(dirpath):
+		print "    " + file
+        return
+
+def update(updatefile):
+	import shutil
+
+	modpath = securitychecker.__file__
+	unitdirpath = os.path.dirname(modpath) + "/data/UnitTests/"
+	compliancedirpath = os.path.dirname(modpath) + "/data/compliance/"
+	untardir = updatefile[:-4] 
+
+	if os.path.isfile(updatefile):
+		untar = "tar xzf " + updatefile
+		copyunit = "cp " + untardir + "/UnitTests/* " + unitdirpath
+		copycompliance = "cp " + untardir + "/compliance/* " + compliancedirpath 
+		try:
+			os.system(untar)
+			os.system(copyunit)
+			os.system(copycompliance)
+			shutil.mtree(untardir)
+		except:
+			sys.exit(1)	
+
+		print "updated"
+	else:
+		print "Not a valid file!"		
+			
+
+def is_opt_provided (parser, dest):
+        if any (opt.dest == dest and (opt._long_opts[0] in sys.argv[1:] or opt._short_opts[0] in sys.argv[1:]) for opt in parser._get_all_options()):
+                return True
+        return False
+
+if __name__ == "__main__":
+	main()
+
+

@@ -1,0 +1,9 @@
+# This is an example file only
+
+ComplianceType: CSM Level 3-4
+DateUpdated: 06012015
+
+UnitTests:
+  - CF-OpenPort22
+  - CF-ELBHealthCheck 
+

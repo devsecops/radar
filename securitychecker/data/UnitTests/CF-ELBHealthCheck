@@ -1,0 +1,7 @@
+#ELB health check
+#key Target
+#value http:80/
+{'1': {'data': 'cloudformation', 'action': 'request', 'key': 'Resources', 'status': '', 'result': ''}}
+{'2': {'data': '[1:result]', 'action': 'dictionary', 'key': 'Type', 'value': 'AWS::ElasticLoadBalancing::LoadBalancer',  'status': '', 'result': ''}}
+{'3': {'data': '[2:result]', 'action': 'dictionary', 'key': 'HealthCheck',  'status': '', 'result': ''}}
+{'4': {'data': '[3:result]', 'action': 'dictionary', 'key': 'Target', 'value': 'http:80/',  'status': '', 'result': ''}}
