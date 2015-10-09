@@ -22,7 +22,18 @@ The repository is being set up to support an API endpoint, the infrastructure te
 |--- aws-securitychecker
 |- tests
 ```
- 
+
+## Roadmap
+We're working on understanding and developing the vision for where this tool could go.  We believe it needs an API and other test harnesses to run through different resources, templates, and components within a Full Stack workload.
+
+### Crawl
+We are planning to build an API capability to allow Radar to be run as part of the CICD pipeline.  And we'll be adding tests to run against CloudFormation templates from the CLI in order to support DevOps teams consumption.
+
+### Walk 
+Radar is planned for expansion to allow for other resources to be tested and integrations with other tools, such as Gauntlt.
+
+### Run
+Radar needs to allow for tests to be run against thousands of accounts, allow for real-time test development, and posting of results into Forecast.
 
 
 
