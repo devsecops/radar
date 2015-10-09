@@ -20,6 +20,7 @@ The repository is being set up to support an API endpoint, the infrastructure te
 |- infrastructure
 |- source
 |--- aws-securitychecker
+|- tests
 ```
  
 
